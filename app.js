@@ -29,12 +29,28 @@ async function displayData() {
     console.log('--- Contiendas ---');
     const contests = await Contest.find()
         .populate('tournament')
-        .populate('winner', 'taekwondoin')
-        .populate('loser', 'taekwondoin');
+        .populate({
+            path: 'winner',
+            populate: {
+                path: 'taekwondoin', // Esto asegura que se traiga el documento taekwondoin asociado
+                select: 'name' // Solo traerá el campo name
+            }
+        })
+        .populate({
+            path: 'loser',
+            populate: {
+                path: 'taekwondoin',
+                select: 'name'
+            }
+        });
     for (const contest of contests) {
+        console.log('contiendas');
+        const winnerName = contest.winner.taekwondoin.name; // Accedemos al nombre del taekwondoin del ganador
+        const loserName = contest.loser.taekwondoin.name; // Accedemos al nombre del taekwondoin del perdedor
+        
         console.log(`Torneo: ${contest.tournament.name}`);
-        console.log(` - Ganador: ${contest.winner.name}`);
-        console.log(` - Perdedor: ${contest.loser.name}`);
+        console.log(` - Ganador: ${winnerName}`);
+        console.log(` - Perdedor: ${loserName}`);
         console.log(`Fecha: ${contest.date.toISOString().split('T')[0]}`);
         console.log();
     }
